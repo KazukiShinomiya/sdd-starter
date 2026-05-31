@@ -1,0 +1,6 @@
+description = "specs/ 全体を走査し、各機能の進捗（spec/plan/tasks/実装）を一覧化する"
+prompt = """
+`prompts/status.md` を読み、その手順に厳密に従って実行せよ。
+
+対象（任意・省略時は全件）: {{args}}
+"""

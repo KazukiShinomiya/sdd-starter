@@ -1,0 +1,17 @@
+name: check
+
+# テンプレートの構造的整合性を CI で守る。
+# 入口とロジック（prompts/）の対応・リンク切れ・テンプレ参照を機械検証する。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 構造的整合性チェック
+        run: bash scripts/check.sh
