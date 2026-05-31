@@ -15,8 +15,10 @@
    - **clarify**: `spec.md` 内に未解決の `[NEEDS CLARIFICATION]` が残っていないか（残数）。
    - **plan**: `plan.md` の有無。Constitution Check が埋まっているか。
    - **tasks**: `tasks.md` の有無と進捗。`[x]`（完了）/ `[~]`（進行中）/ `[ ]`（未着手）を数える。
-3. 各機能の「次の一手」を判定する（例: 未解決の clarification があれば `/clarify`、
-   plan が無ければ `/plan`、tasks 未完なら `/implement`）。
+3. 各機能の「次の一手」を判定する（例: spec が雛形のまま未記入なら `/specify`、
+   未解決の clarification があれば `/clarify`、plan が無ければ `/plan`、tasks 未完なら `/implement`）。
+   - 雛形プレースホルダの `[NEEDS CLARIFICATION]` は「未記入」であって「解決すべき曖昧さ」とは
+     区別する（前者の次の一手は `/specify`）。
 
 ## 出力
 表で俯瞰できる形にする（変更は一切しない）:

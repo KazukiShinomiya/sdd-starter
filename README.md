@@ -8,6 +8,8 @@ AIエージェントと共に **Spec-Driven Development（仕様駆動開発, SD
 GitHub [Spec Kit](https://github.com/github/spec-kit) が確立した型を借りつつ、
 Python製CLIなどの外部依存を一切持たず、**Markdown だけで完結**するよう再構成している。
 
+> 🚀 すぐ始めるなら [**クイックスタート（最初の30分）**](./docs/quickstart.md) へ。
+
 ---
 
 ## なぜ仕様駆動開発なのか
@@ -49,6 +51,7 @@ AIエージェントにいきなり「作って」と頼むと、暗黙の前提
 | `/checklist` | `specs/NNN-*/checklists/*.md` | 1つの成果物（spec/plan/tasks）の**内部品質**を観点表で検査する。`/analyze` が成果物**間**の整合を見るのに対し、こちらは単体の質を問う。 |
 | `/taskstoissues` | `specs/NNN-*/issues.md` | `tasks.md` を課題トラッカー用の issue ドラフトに変換する。既定はゼロ依存の Markdown 出力。`gh` があれば任意で GitHub issue 化。 |
 | `/status` | レポート | `specs/` 全体を走査し、各機能が spec/plan/tasks/実装のどこにいるかを一覧化する進捗ダッシュボード。読み取り専用。 |
+| `/amend` | spec.md 更新 | 確定済みの仕様を改訂し、**変更履歴**と下流（plan/tasks）への波及を記録する。仕様変更を黙って入れず、明示的に追跡する。 |
 
 ---
 
@@ -59,6 +62,8 @@ speckit-home/
 ├── README.md                  # この道標
 ├── LICENSE                    # The Unlicense（パブリックドメイン）
 ├── CONTRIBUTING.md            # 貢献ガイド（コマンド追加手順・設計の核）
+├── docs/
+│   └── quickstart.md          # クイックスタート（最初の30分）
 ├── memory/
 │   └── constitution.md        # プロジェクトの不可侵原則（全段階の上位制約）
 ├── templates/                 # 各成果物の雛形（言語非依存）
@@ -78,7 +83,8 @@ speckit-home/
 │   ├── implement.md
 │   ├── checklist.md            #   補助: 成果物の内部品質チェック
 │   ├── taskstoissues.md        #   補助: タスクの課題化
-│   └── status.md               #   補助: 進捗ダッシュボード
+│   ├── status.md               #   補助: 進捗ダッシュボード
+│   └── amend.md                #   補助: 仕様変更の追跡
 ├── scripts/                   # ヘルパ（bash + PowerShell 両対応・ゼロ依存）
 │   ├── new-feature.sh         #   次の連番で specs/NNN-name/ を作り spec.md を用意
 │   ├── new-feature.ps1
@@ -90,7 +96,8 @@ speckit-home/
 │       ├── plan.md
 │       └── tasks.md
 ├── examples/                  # 動作例（ドッグフード）
-│   └── url-shortener/         #   constitution〜tasks + research/data-model/contracts の実例
+│   ├── url-shortener/         #   Web API + DB のフル工程（constitution〜tasks + 補助成果物）
+│   └── toc-generator/         #   小さな CLI の最短経路（spec → plan → tasks）
 ├── .github/workflows/         # CI（テンプレの構造的整合性を自動検査）
 ├── .claude/commands/          # Claude Code用の入口（薄いラッパ）
 ├── .cursor/commands/          # Cursor用の入口
