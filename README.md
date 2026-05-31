@@ -90,7 +90,7 @@ speckit-home/
 │       ├── plan.md
 │       └── tasks.md
 ├── examples/                  # 動作例（ドッグフード）
-│   └── url-shortener/         #   spec/plan/tasks + research/data-model/contracts の実例
+│   └── url-shortener/         #   constitution〜tasks + research/data-model/contracts の実例
 ├── .github/workflows/         # CI（テンプレの構造的整合性を自動検査）
 ├── .claude/commands/          # Claude Code用の入口（薄いラッパ）
 ├── .cursor/commands/          # Cursor用の入口
@@ -115,6 +115,14 @@ speckit-home/
 /plan           # 技術スタックを指定して設計
 /tasks          # タスクに分解
 /implement      # 実装を実行
+```
+
+任意の補助コマンドは、どの段階でも差し込める:
+
+```
+/checklist plan   # 直近の plan.md の内部品質を観点表で検査
+/status           # specs/ 全体の進捗（どの機能がどの段階か）を俯瞰
+/taskstoissues    # tasks.md を課題トラッカー用の issue ドラフトに変換
 ```
 
 ### その他のエージェント
