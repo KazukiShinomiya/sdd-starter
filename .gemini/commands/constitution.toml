@@ -1,0 +1,6 @@
+description = "プロジェクトの不可侵原則（憲法）を確立・更新する"
+prompt = """
+`prompts/constitution.md` を読み、その手順に厳密に従って実行せよ。
+
+確立したい原則・制約（任意）: {{args}}
+"""

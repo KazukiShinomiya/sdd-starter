@@ -1,0 +1,5 @@
+# 機能ごとの成果物がこのディレクトリに溜まる。
+# 命名規則: NNN-feature-name/  （例: 001-user-auth/）
+#   NNN = 3桁の連番（001 から昇順）
+#   feature-name = ケバブケースの短い英語名
+# 各機能ディレクトリには spec.md / plan.md / tasks.md が入る。
