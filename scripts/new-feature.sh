@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # 次の連番を採番し specs/NNN-feature-name/ を作成して、そのパスを標準出力に返す。
+# 併せて templates/spec-template.md を spec.md としてコピーし、執筆の土台を用意する。
 # 使い方: scripts/new-feature.sh "<機能名>"
 #   機能名は自由記述でよい。英数字以外はハイフンに正規化される。
 set -euo pipefail
@@ -42,6 +43,13 @@ next="$(printf '%03d' $((max + 1)))"
 
 dir="$specs/$next-$slug"
 mkdir -p "$dir"
+
+# spec.md の土台を用意する（テンプレがあり、まだ無い場合のみ）。
+# stdout はパス専用なので、ここでは何も出力しない（コピーは静かな副作用）。
+template="$root/templates/spec-template.md"
+if [ -f "$template" ] && [ ! -f "$dir/spec.md" ]; then
+  cp "$template" "$dir/spec.md"
+fi
 
 # 作成したディレクトリの絶対パスを返す（呼び出し元/エージェントが利用する）
 printf '%s\n' "$dir"

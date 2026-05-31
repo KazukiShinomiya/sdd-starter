@@ -21,7 +21,9 @@
 
 ## 出力
 - `specs/NNN-feature-name/plan.md`
-- 必要なら `data-model.md` / `contracts/` / `research.md` に分割
+- 必要なら補助成果物に分割（いずれも `templates/` に雛形あり）:
+  `data-model.md`（`data-model-template.md`）/ `contracts/`（`contract-template.md`）/
+  `research.md`（`research-template.md`）
 - 要約: 採用スタック・主要設計判断・Constitution Check の結果
 
 ## 禁止

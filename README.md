@@ -40,6 +40,13 @@ AIエージェントにいきなり「作って」と頼むと、暗黙の前提
 
 `[]` 内は任意。小さな機能なら飛ばしてよい。
 
+### 補助コマンド（任意）
+
+| コマンド | 成果物 | 使いどき |
+|----------|--------|----------|
+| `/checklist` | `specs/NNN-*/checklists/*.md` | 1つの成果物（spec/plan/tasks）の**内部品質**を観点表で検査する。`/analyze` が成果物**間**の整合を見るのに対し、こちらは単体の質を問う。 |
+| `/taskstoissues` | `specs/NNN-*/issues.md` | `tasks.md` を課題トラッカー用の issue ドラフトに変換する。既定はゼロ依存の Markdown 出力。`gh` があれば任意で GitHub issue 化。 |
+
 ---
 
 ## ディレクトリ構造
@@ -52,7 +59,10 @@ speckit-home/
 ├── templates/                 # 各成果物の雛形（言語非依存）
 │   ├── spec-template.md
 │   ├── plan-template.md
-│   └── tasks-template.md
+│   ├── tasks-template.md
+│   ├── research-template.md    #   plan の補助: 技術選定の下調べ
+│   ├── data-model-template.md  #   plan の補助: §3 データモデルの詳細
+│   └── contract-template.md    #   plan の補助: §4 インターフェース契約
 ├── prompts/                   # ★ロジックの本体（エージェント非依存）
 │   ├── constitution.md
 │   ├── specify.md
@@ -60,7 +70,9 @@ speckit-home/
 │   ├── plan.md
 │   ├── tasks.md
 │   ├── analyze.md
-│   └── implement.md
+│   ├── implement.md
+│   ├── checklist.md            #   補助: 成果物の内部品質チェック
+│   └── taskstoissues.md        #   補助: タスクの課題化
 ├── scripts/                   # 採番ヘルパ（bash + PowerShell 両対応・ゼロ依存）
 │   ├── new-feature.sh         #   次の連番で specs/NNN-name/ を作りパスを返す
 │   └── new-feature.ps1

@@ -15,11 +15,13 @@
    ASCII に保つ。採番スクリプトでディレクトリを作る（採番ミスを防ぐため）:
    - bash: `scripts/new-feature.sh "user-auth"`
    - PowerShell: `scripts/new-feature.ps1 -Name "user-auth"`
-   スクリプトは次の連番を採番し `specs/NNN-feature-name/` を作って **その絶対パスを返す**。
+   スクリプトは次の連番を採番し `specs/NNN-feature-name/` を作り、
+   `templates/spec-template.md` を `spec.md` としてコピーした上で **その絶対パスを返す**。
    返ったパスを以降の出力先に使う。
 3. スクリプトが使えない環境では手動でフォールバック: `specs/` の先頭数値の最大+1 を
-   3桁ゼロ詰め（無ければ `001`）にし、ケバブケースの機能名で `specs/NNN-feature-name/` を作る。
-4. `templates/spec-template.md` を雛形に `specs/NNN-feature-name/spec.md` を生成する。
+   3桁ゼロ詰め（無ければ `001`）にし、ケバブケースの機能名で `specs/NNN-feature-name/` を作り、
+   `templates/spec-template.md` を同ディレクトリへ `spec.md` としてコピーする。
+4. 用意された `specs/NNN-feature-name/spec.md`（雛形）を、要求に沿って埋める。
 5. ユーザーストーリーごとに **テストに変換できる受け入れ基準** を書く。
 6. 曖昧な点・前提・未決定は **隠さず** `[NEEDS CLARIFICATION: 具体的な問い]` で明示する。
    - 想像で埋めない。分からないことは分からないと書く。
