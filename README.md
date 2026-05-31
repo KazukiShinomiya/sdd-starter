@@ -61,6 +61,9 @@ speckit-home/
 │   ├── tasks.md
 │   ├── analyze.md
 │   └── implement.md
+├── scripts/                   # 採番ヘルパ（bash + PowerShell 両対応・ゼロ依存）
+│   ├── new-feature.sh         #   次の連番で specs/NNN-name/ を作りパスを返す
+│   └── new-feature.ps1
 ├── specs/                     # 機能ごとの成果物がここに溜まる
 │   └── NNN-feature-name/
 │       ├── spec.md

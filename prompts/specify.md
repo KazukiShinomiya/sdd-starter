@@ -10,8 +10,15 @@
 
 ## 手順
 1. `memory/constitution.md` を読み、上位制約を把握する。
-2. `specs/` を見て、次の連番 `NNN` を決める（既存の最大+1、無ければ `001`）。
-3. 要求から短いケバブケースの機能名を決め、`specs/NNN-feature-name/` を作る。
+2. 要求から短い機能名を **英数字のケバブケース** で決める（例: 「ユーザー認証」→ `user-auth`）。
+   日本語などの正式名称は spec.md 内のタイトルに残し、ディレクトリ識別子は移植性のため
+   ASCII に保つ。採番スクリプトでディレクトリを作る（採番ミスを防ぐため）:
+   - bash: `scripts/new-feature.sh "user-auth"`
+   - PowerShell: `scripts/new-feature.ps1 -Name "user-auth"`
+   スクリプトは次の連番を採番し `specs/NNN-feature-name/` を作って **その絶対パスを返す**。
+   返ったパスを以降の出力先に使う。
+3. スクリプトが使えない環境では手動でフォールバック: `specs/` の先頭数値の最大+1 を
+   3桁ゼロ詰め（無ければ `001`）にし、ケバブケースの機能名で `specs/NNN-feature-name/` を作る。
 4. `templates/spec-template.md` を雛形に `specs/NNN-feature-name/spec.md` を生成する。
 5. ユーザーストーリーごとに **テストに変換できる受け入れ基準** を書く。
 6. 曖昧な点・前提・未決定は **隠さず** `[NEEDS CLARIFICATION: 具体的な問い]` で明示する。

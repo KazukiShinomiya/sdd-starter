@@ -11,6 +11,9 @@ Thumbs.db
 # Claude Code のローカル設定（権限など・個人環境ごとなので共有しない）
 .claude/settings.local.json
 
+# 作業状態メモ（個人用・テンプレート配布物には含めない）
+SESSION_STATE.md
+
 # 言語別の成果物（利用するスタックに応じて追記する）
 # Node
 node_modules/
