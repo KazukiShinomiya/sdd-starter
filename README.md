@@ -1,4 +1,4 @@
-# Spec Kit Home — 仕様駆動開発テンプレート
+# SDD Starter — 仕様駆動開発テンプレート
 
 [![check](https://github.com/KazukiShinomiya/sdd-starter/actions/workflows/check.yml/badge.svg)](https://github.com/KazukiShinomiya/sdd-starter/actions/workflows/check.yml)
 
@@ -78,7 +78,7 @@ AIエージェントにいきなり「作って」と頼むと、暗黙の前提
 ## ディレクトリ構造
 
 ```
-speckit-home/
+sdd-starter/
 ├── README.md                  # この道標
 ├── LICENSE                    # The Unlicense（パブリックドメイン）
 ├── CONTRIBUTING.md            # 貢献ガイド（コマンド追加手順・設計の核）
