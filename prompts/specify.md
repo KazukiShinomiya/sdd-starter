@@ -18,9 +18,14 @@
    スクリプトは次の連番を採番し `specs/NNN-feature-name/` を作り、
    `templates/spec-template.md` を `spec.md` としてコピーした上で **その絶対パスを返す**。
    返ったパスを以降の出力先に使う。
+   - 併せて、既定で機能ごとの Git ブランチ `NNN-feature-name` を切って checkout する
+     （1機能=1ブランチ=PR の連結のため）。ブランチ名は stderr に報告される——
+     ユーザーへの要約に含めること。Git リポジトリでなければブランチ作成は静かに飛ばす。
+     ブランチを切りたくない時は `--no-branch`（PowerShell は `-NoBranch`）を付ける。
 3. スクリプトが使えない環境では手動でフォールバック: `specs/` の先頭数値の最大+1 を
    3桁ゼロ詰め（無ければ `001`）にし、ケバブケースの機能名で `specs/NNN-feature-name/` を作り、
-   `templates/spec-template.md` を同ディレクトリへ `spec.md` としてコピーする。
+   `templates/spec-template.md` を同ディレクトリへ `spec.md` としてコピーする
+   （この経路ではブランチは自動で切られない——必要なら手動で `git switch -c NNN-feature-name`）。
 4. 用意された `specs/NNN-feature-name/spec.md`（雛形）を、要求に沿って埋める。
 5. ユーザーストーリーごとに **テストに変換できる受け入れ基準** を書く。
 6. 曖昧な点・前提・未決定は **隠さず** `[NEEDS CLARIFICATION: 具体的な問い]` で明示する。
@@ -29,7 +34,7 @@
 
 ## 出力
 - `specs/NNN-feature-name/spec.md`
-- 要約: 機能名・主要ユーザーストーリー数・未解決の `[NEEDS CLARIFICATION]` 件数
+- 要約: 機能名・作成された Git ブランチ名・主要ユーザーストーリー数・未解決の `[NEEDS CLARIFICATION]` 件数
 
 ## 禁止
 - 技術スタック・ライブラリ・データ構造・API設計など **実装の話を書かない**。

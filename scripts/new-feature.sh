@@ -1,13 +1,26 @@
 #!/usr/bin/env bash
 # 次の連番を採番し specs/NNN-feature-name/ を作成して、そのパスを標準出力に返す。
 # 併せて templates/spec-template.md を spec.md としてコピーし、執筆の土台を用意する。
-# 使い方: scripts/new-feature.sh "<機能名>"
+# 既定では機能ごとの Git ブランチ NNN-feature-name を切って checkout する
+# （1機能=1ブランチ=PR の連結のため）。--no-branch で抑止できる。
+# 使い方: scripts/new-feature.sh [--no-branch] "<機能名>"
 #   機能名は自由記述でよい。英数字以外はハイフンに正規化される。
 set -euo pipefail
 
-name="${1:-}"
+name=""
+make_branch=1
+for arg in "$@"; do
+  case "$arg" in
+    --no-branch) make_branch=0 ;;
+    -*) echo "unknown option: $arg" >&2; exit 1 ;;
+    *)
+      if [ -z "$name" ]; then name="$arg"
+      else echo "error: too many arguments: '$arg'" >&2; exit 1; fi
+      ;;
+  esac
+done
 if [ -z "$name" ]; then
-  echo "usage: new-feature.sh <feature-name>" >&2
+  echo "usage: new-feature.sh [--no-branch] <feature-name>" >&2
   exit 1
 fi
 
@@ -40,6 +53,34 @@ for d in "$specs"/*/; do
   [ "$n" -gt "$max" ] && max="$n"
 done
 next="$(printf '%03d' $((max + 1)))"
+
+# 機能ごとの Git ブランチ NNN-feature-name へ移る（ディレクトリ作成の前に切り、
+# spec.md を最初から機能ブランチ上で生ませる）。best-effort——失敗しても採番は続行。
+# stdout はパス専用なので、ここでの報告は全て stderr に出す。
+branch="$next-$slug"
+if [ "$make_branch" -eq 1 ]; then
+  if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if git -C "$root" show-ref --verify --quiet "refs/heads/$branch"; then
+      # 既存ブランチ: 作り直さず切り替えるだけ（再実行に冪等）。
+      if git -C "$root" switch "$branch" >/dev/null 2>&1 \
+         || git -C "$root" checkout "$branch" >/dev/null 2>&1; then
+        echo "branch: switched to existing '$branch'" >&2
+      else
+        echo "warning: could not switch to existing branch '$branch'; staying put" >&2
+      fi
+    else
+      # 新規ブランチを現在の HEAD から切って移る（switch は新しめの git、checkout は後方互換）。
+      if git -C "$root" switch -c "$branch" >/dev/null 2>&1 \
+         || git -C "$root" checkout -b "$branch" >/dev/null 2>&1; then
+        echo "branch: created and switched to '$branch'" >&2
+      else
+        echo "warning: could not create branch '$branch'; staying on current branch" >&2
+      fi
+    fi
+  else
+    echo "note: not a git repository; skipped branch creation" >&2
+  fi
+fi
 
 dir="$specs/$next-$slug"
 mkdir -p "$dir"
