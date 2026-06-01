@@ -62,6 +62,7 @@ speckit-home/
 ├── README.md                  # この道標
 ├── LICENSE                    # The Unlicense（パブリックドメイン）
 ├── CONTRIBUTING.md            # 貢献ガイド（コマンド追加手順・設計の核）
+├── AGENTS.md                  # 全エージェント共有の永続文脈（/plan が技術スタックを増分更新）
 ├── docs/
 │   └── quickstart.md          # クイックスタート（最初の30分）
 ├── memory/
@@ -86,8 +87,10 @@ speckit-home/
 │   ├── status.md               #   補助: 進捗ダッシュボード
 │   └── amend.md                #   補助: 仕様変更の追跡
 ├── scripts/                   # ヘルパ（bash + PowerShell 両対応・ゼロ依存）
-│   ├── new-feature.sh         #   次の連番で specs/NNN-name/ を作り spec.md を用意
+│   ├── new-feature.sh         #   次の連番で specs/NNN-name/ を作り、機能ブランチを切る
 │   ├── new-feature.ps1
+│   ├── update-agent-context.sh #  AGENTS.md に技術スタックを増分蓄積（/plan が呼ぶ）
+│   ├── update-agent-context.ps1
 │   ├── check.sh               #   構造的整合性の検査（CI でも実行）
 │   └── check.ps1
 ├── specs/                     # 機能ごとの成果物がここに溜まる
@@ -108,6 +111,22 @@ speckit-home/
 **設計の核**: ロジックは `prompts/` に一元化されている。
 各エージェント用の入口（`.claude/commands/` など）は、対応する `prompts/*.md` を読んで
 実行するだけの薄いラッパだ。新しいエージェントへの対応は「入口を足す」だけで済む。
+
+---
+
+## エージェント共有メモリ（AGENTS.md）
+
+`/specify` は機能ごとに **Git ブランチ `NNN-feature-name`** を切る（1機能=1ブランチ=PR）。
+`/plan` は確定した技術スタックを **`AGENTS.md`** に増分で刻む——全エージェント
+（Claude / Cursor / Copilot / Gemini ほか）が読む永続文脈だ。これにより、段階や
+セッションをまたいでも AI は「このプロジェクトが何で出来ているか」を保ち続ける。
+
+- 機械管理されるのは `AGENTS.md` の `AUTO:BEGIN`〜`AUTO:END` ブロックのみ。
+  **その外側に書いた手書きの約束事は、更新しても保持される。**
+- 技術スタックは重複排除して蓄積し、直近の変更は新しい順に保つ。
+- 更新は `scripts/update-agent-context.{sh,ps1}` が担う（`/plan` が自動で呼ぶ）。
+- ブランチを切りたくない時は `scripts/new-feature.sh --no-branch`（PowerShell は `-NoBranch`）。
+  Git リポジトリでなければブランチ作成は静かに飛ばす。
 
 ---
 
