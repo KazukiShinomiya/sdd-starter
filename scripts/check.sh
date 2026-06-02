@@ -53,6 +53,18 @@ while IFS= read -r ref; do
 done < <(grep -rhoE "[a-z-]+-template\.md" prompts templates README.md | sort -u)
 [ "$tbroken" -eq 0 ] && ok "テンプレ参照のリンク切れなし"
 
+# 各 prompts/*.md が必須4節を備えるか（骨格の構造ゲート）。
+# prompts/ は真実の源なので、節の欠落は全エージェントに波及する。
+# 「次の一手」は終端コマンドでは省ける任意節なので検査しない。
+pbroken=0
+for f in prompts/*.md; do
+  [ -e "$f" ] || continue
+  for sec in "## 入力" "## 手順" "## 出力" "## 禁止"; do
+    grep -qE "^$sec\$" "$f" || { err "prompts 構造: $(basename "$f") に節「$sec」が無い"; pbroken=1; }
+  done
+done
+[ "$pbroken" -eq 0 ] && ok "prompts: 全 prompt が必須4節（入力/手順/出力/禁止）を備える"
+
 echo ""
 if [ "$fail" -ne 0 ]; then
   echo "検査失敗。上の NG を修正せよ。" >&2

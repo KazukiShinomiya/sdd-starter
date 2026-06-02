@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Check the structural integrity of the template (zero-dependency, read-only).
 .DESCRIPTION
@@ -54,6 +54,22 @@ $trefs = Get-ChildItem -Recurse -File prompts, templates, README.md |
 $tbroken = $false
 foreach ($r in $trefs) { if (-not (Test-Path (Join-Path "templates" $r))) { Fail "broken link: missing templates/$r"; $tbroken = $true } }
 if (-not $tbroken) { Pass "no broken template references" }
+
+# Every prompts/*.md must carry the 4 required sections (structural gate).
+# prompts/ is the single source of truth, so a missing section ripples to all
+# agents. The optional "next step" section is not required (terminal commands omit it).
+# NOTE: the section names below are Japanese, so this file is saved as UTF-8 WITH BOM
+# (unlike its ASCII-only sibling scripts) and target files are read as UTF-8 explicitly,
+# so Windows PowerShell 5.1 never mis-reads them as CP932.
+$required = @("## 入力", "## 手順", "## 出力", "## 禁止")
+$pbroken = $false
+foreach ($f in Get-ChildItem prompts/*.md) {
+  $lines = @([System.IO.File]::ReadAllText($f.FullName, [System.Text.Encoding]::UTF8) -split "\r?\n")
+  foreach ($sec in $required) {
+    if ($lines -notcontains $sec) { Fail "prompts structure: $($f.Name) is missing section '$sec'"; $pbroken = $true }
+  }
+}
+if (-not $pbroken) { Pass "prompts: every prompt has the 4 required sections" }
 
 Write-Host ""
 if ($fail) { Write-Host "Checks failed. Fix the NG items above."; exit 1 }
