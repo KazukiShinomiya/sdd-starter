@@ -1,7 +1,10 @@
 name: check
 
-# テンプレートの構造的整合性を CI で守る。
-# 入口とロジック（prompts/）の対応・リンク切れ・テンプレ参照を機械検証する。
+# テンプレートの整合性を CI で守る（bash 系・PowerShell 系の両肺で検証）。
+#   - check     : 入口とロジック（prompts/）の対応・リンク切れ・テンプレ参照・prompts 構造
+#   - test-parity: new-feature / update-agent-context の bash↔PS 振る舞い等価性（golden 比較）
+# bash 系は ubuntu、PowerShell 系は Windows PowerShell 5.1（本テンプレが主対象とする環境）で走らせ、
+# 片系統だけ壊れて CI を素通りする事故を防ぐ。
 on:
   push:
     branches: [main]
@@ -9,9 +12,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  integrity:
+  linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 構造的整合性チェック
+      - name: 構造的整合性チェック (bash)
         run: bash scripts/check.sh
+      - name: パリティテスト (bash)
+        run: bash scripts/test-parity.sh
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 構造的整合性チェック (Windows PowerShell 5.1)
+        shell: powershell
+        run: .\scripts\check.ps1
+      - name: パリティテスト (Windows PowerShell 5.1)
+        shell: powershell
+        run: .\scripts\test-parity.ps1
