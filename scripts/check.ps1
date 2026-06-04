@@ -47,6 +47,26 @@ $broken = $false
 foreach ($r in $refs) { if (-not (Test-Path $r)) { Fail "broken link: entry references missing $r"; $broken = $true } }
 if (-not $broken) { Pass "no broken entry -> prompts links" }
 
+# Each entry must reference the prompts/*.md that matches its OWN name (mis-wiring guard).
+# Passing both the name-set check and the broken-link check still lets a "specify"
+# entry silently point at prompts/plan.md. Close that gap.
+$mismatch = $false
+function Check-SelfRef($label, $dir, $suffix) {
+  foreach ($f in Get-ChildItem (Join-Path $dir "*$suffix") -ErrorAction SilentlyContinue) {
+    $name = $f.Name.Substring(0, $f.Name.Length - $suffix.Length)
+    $body = [System.IO.File]::ReadAllText($f.FullName, [System.Text.Encoding]::UTF8)
+    if ($body -notmatch "prompts/$name\.md([^a-z]|$)") {
+      Fail "${label}: entry $($f.Name) does not reference its own prompt (prompts/$name.md)"
+      $script:mismatch = $true
+    }
+  }
+}
+Check-SelfRef "claude" ".claude/commands" ".md"
+Check-SelfRef "cursor" ".cursor/commands" ".md"
+Check-SelfRef "github" ".github/prompts"  ".prompt.md"
+Check-SelfRef "gemini" ".gemini/commands" ".toml"
+if (-not $mismatch) { Pass "each entry references its own prompt" }
+
 # *-template.md references must resolve
 $trefs = Get-ChildItem -Recurse -File prompts, templates, README.md |
   Select-String -Pattern '[a-z-]+-template\.md' -AllMatches |
@@ -70,6 +90,26 @@ foreach ($f in Get-ChildItem prompts/*.md) {
   }
 }
 if (-not $pbroken) { Pass "prompts: every prompt has the 4 required sections" }
+
+# examples/ must track the template skeleton (teaching-material freshness gate).
+# examples are dogfooded teaching material; catch the drift where a template heading
+# evolves but an example is left behind. Sections a small feature may legitimately omit
+# (e.g. tasks phases) are NOT required. Match by literal substring so both lungs behave
+# identically. Headings are Japanese, so read target files as UTF-8 explicitly.
+$ebroken = $false
+function Check-Doc($file, $heads) {
+  if (-not (Test-Path $file)) { return }   # skip artifacts an example has not produced
+  $text = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+  foreach ($h in $heads) {
+    if (-not $text.Contains($h)) { Fail "examples freshness: $file is missing heading '$h'"; $script:ebroken = $true }
+  }
+}
+foreach ($d in Get-ChildItem examples -Directory) {
+  Check-Doc (Join-Path $d.FullName "spec.md")  @("## 1. 概要","## 2. なぜ","## 3. ユーザーストーリー","## 4. スコープ","## 5. 非機能要件","## 6. 未決定事項","## 7. 憲法との整合")
+  Check-Doc (Join-Path $d.FullName "plan.md")  @("## 1. 技術スタック","## 2. アーキテクチャ概要","## 3. データモデル","## 4. インターフェース","## 5. 主要な設計判断","## 6. Constitution Check","## 7. リスクと未確定事項")
+  Check-Doc (Join-Path $d.FullName "tasks.md") @("## 凡例","## トレーサビリティ")
+}
+if (-not $ebroken) { Pass "examples track the template skeleton (required headings)" }
 
 Write-Host ""
 if ($fail) { Write-Host "Checks failed. Fix the NG items above."; exit 1 }

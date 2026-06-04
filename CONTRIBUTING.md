@@ -57,6 +57,12 @@ CI（`.github/workflows/check.yml`）は ubuntu と Windows PowerShell 5.1 の**
 `templates/*-template.md` を追加し、対応する `prompts/*.md` から参照する。
 参照名は `*-template.md` 形式にすること（`check` がリンク切れを検査する）。
 
+> **テンプレを持つコマンド・持たないコマンド**: `templates/` を持つのは、成果物が
+> **固定構造で雛形化できる**もの（spec / plan / tasks と plan の補助 3種）だけだ。
+> `checklist` / `status` / `analyze` などは、入力に応じて**構造そのものを動的に組み立てる**
+> 成果物なので、意図的に固定テンプレを持たない。コマンドごとに template が要るわけではない
+> ——「雛形にできる形か」で判断する。
+
 ---
 
 ## スクリプトを書くときの注意
