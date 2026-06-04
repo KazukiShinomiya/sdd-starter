@@ -24,8 +24,9 @@ Python製CLIなどの外部依存を一切持たず、**Markdown だけで完結
   日本語で SDD を学び・実践したい層のための道具だ。
 - **ゼロ依存・Markdown だけ** — Python も CLI も要らない。clone すれば即動く。
   外部ツールを増やしたくない人向け。
-- **学習用の一気通貫サンプル** — `examples/` に憲法から実装直前まで記入済みの実例を2本
-  （Web API のフル工程 / CLI の最短経路）。本家が見せない「完成形」を読んで学べる。
+- **学習用の一気通貫サンプル** — `examples/` に憲法から実装直前まで記入済みの実例を3本
+  （Web API のフル工程 / CLI の最短経路 / **曖昧さに躓き仕様が変わる messy な工程**）。
+  本家が見せない「完成形」と「現実の躓き」の両方を読んで学べる。
 
 「より高機能な spec-kit」ではない。**「日本語で、依存なしで、サンプルから学べる」SDD テンプレート**
 ——それがこの道具の存在理由だ。
@@ -120,7 +121,8 @@ sdd-starter/
 │       └── tasks.md
 ├── examples/                  # 動作例（ドッグフード）
 │   ├── url-shortener/         #   Web API + DB のフル工程（constitution〜tasks + 補助成果物）
-│   └── toc-generator/         #   小さな CLI の最短経路（spec → plan → tasks）
+│   ├── toc-generator/         #   小さな CLI の最短経路（spec → plan → tasks）
+│   └── library-loan/          #   messy な現実: constitution〜tasks。/clarify で曖昧さを潰し /amend で仕様変更が走る工程
 ├── .github/workflows/         # CI（テンプレの構造的整合性を自動検査）
 ├── .claude/commands/          # Claude Code用の入口（薄いラッパ）
 ├── .cursor/commands/          # Cursor用の入口
