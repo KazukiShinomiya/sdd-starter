@@ -45,6 +45,25 @@ while IFS= read -r ref; do
 done < <(grep -rhoE "prompts/[a-z]+\.md" .claude .cursor .github .gemini | sort -u)
 [ "$broken" -eq 0 ] && ok "入口 → prompts のリンク切れなし"
 
+# 各入口が「自分と同名の」prompts/*.md を参照しているか（取り違え検知）。
+# 名前集合の一致とリンク切れの両方を通り抜けても、specify の入口が
+# 誤って prompts/plan.md を指すような取り違えは沈黙する。それを塞ぐ。
+mismatch=0
+check_self_ref() {
+  local label="$1" dir="$2" suffix="$3"
+  for f in "$dir"/*"$suffix"; do
+    [ -e "$f" ] || continue
+    b="$(basename "$f")"; name="${b%$suffix}"
+    grep -qE "prompts/${name}\.md([^a-z]|\$)" "$f" \
+      || { err "$label: 入口 $b が自分の prompt（prompts/${name}.md）を参照していない"; mismatch=1; }
+  done
+}
+check_self_ref "claude" ".claude/commands" ".md"
+check_self_ref "cursor" ".cursor/commands" ".md"
+check_self_ref "github" ".github/prompts"  ".prompt.md"
+check_self_ref "gemini" ".gemini/commands" ".toml"
+[ "$mismatch" -eq 0 ] && ok "入口は各々自分の prompt を参照している"
+
 # *-template.md への参照が実在するか
 tbroken=0
 while IFS= read -r ref; do
@@ -64,6 +83,25 @@ for f in prompts/*.md; do
   done
 done
 [ "$pbroken" -eq 0 ] && ok "prompts: 全 prompt が必須4節（入力/手順/出力/禁止）を備える"
+
+# examples/ がテンプレの骨格（必須見出し）に追従しているか（教材の鮮度ゲート）。
+# examples はドッグフードの教材。テンプレが進化して見出しが変わったのに examples が
+# 取り残される乖離を捕まえる。小さな機能が正当に省ける節（tasks のフェーズ等）は
+# 必須に含めない。括弧書きの揺れを避けるため固定文字列の包含で照合する。
+ebroken=0
+check_doc() {
+  local file="$1"; shift
+  [ -f "$file" ] || return 0   # その成果物が無い example はスキップ（plan 未着手など）
+  for h in "$@"; do
+    grep -qF -- "$h" "$file" || { err "examples 鮮度: $file に見出し「$h」が無い"; ebroken=1; }
+  done
+}
+for d in examples/*/; do
+  check_doc "${d}spec.md"  "## 1. 概要" "## 2. なぜ" "## 3. ユーザーストーリー" "## 4. スコープ" "## 5. 非機能要件" "## 6. 未決定事項" "## 7. 憲法との整合"
+  check_doc "${d}plan.md"  "## 1. 技術スタック" "## 2. アーキテクチャ概要" "## 3. データモデル" "## 4. インターフェース" "## 5. 主要な設計判断" "## 6. Constitution Check" "## 7. リスクと未確定事項"
+  check_doc "${d}tasks.md" "## 凡例" "## トレーサビリティ"
+done
+[ "$ebroken" -eq 0 ] && ok "examples はテンプレの骨格（必須見出し）に追従している"
 
 echo ""
 if [ "$fail" -ne 0 ]; then
