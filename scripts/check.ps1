@@ -104,10 +104,23 @@ function Check-Doc($file, $heads) {
     if (-not $text.Contains($h)) { Fail "examples freshness: $file is missing heading '$h'"; $script:ebroken = $true }
   }
 }
+# A clarify/amend example must carry the trace (heading) and the back-reference together.
+# A heading without "-> section" refs (or vice versa) is a half-wired teaching example.
+# Examples without sec.8/9 (the smoothly-flowing ones) pass untouched -> library-loan independent.
+function Check-Trace($file, $heading, $ref) {
+  if (-not (Test-Path $file)) { return }
+  $text = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+  if ($text.Contains($heading) -ne $text.Contains($ref)) {
+    Fail "examples freshness: $file must carry heading '$heading' and reference '$ref' together"
+    $script:ebroken = $true
+  }
+}
 foreach ($d in Get-ChildItem examples -Directory) {
   Check-Doc (Join-Path $d.FullName "spec.md")  @("## 1. 概要","## 2. なぜ","## 3. ユーザーストーリー","## 4. スコープ","## 5. 非機能要件","## 6. 未決定事項","## 7. 憲法との整合")
   Check-Doc (Join-Path $d.FullName "plan.md")  @("## 1. 技術スタック","## 2. アーキテクチャ概要","## 3. データモデル","## 4. インターフェース","## 5. 主要な設計判断","## 6. Constitution Check","## 7. リスクと未確定事項")
   Check-Doc (Join-Path $d.FullName "tasks.md") @("## 凡例","## トレーサビリティ")
+  Check-Trace (Join-Path $d.FullName "spec.md") "## 8. 明確化ログ" "→ §8"
+  Check-Trace (Join-Path $d.FullName "spec.md") "## 9. 改訂履歴" "→ §9"
 }
 if (-not $ebroken) { Pass "examples track the template skeleton (required headings)" }
 

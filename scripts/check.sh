@@ -96,10 +96,25 @@ check_doc() {
     grep -qF -- "$h" "$file" || { err "examples 鮮度: $file に見出し「$h」が無い"; ebroken=1; }
   done
 }
+# clarify/amend を通した example は、痕跡（§8/§9 見出し）と追跡（AC 側の → §8/→ §9 参照）を
+# 対で持つこと。片方だけ（見出しはあるが参照が無い／その逆）は教材として片肺だ。
+# §8/§9 を持たない example（順調に流れる例）は無風で通る＝library-loan 非依存。
+check_trace() {
+  local file="$1" heading="$2" ref="$3"
+  [ -f "$file" ] || return 0
+  local has_h=0 has_r=0
+  grep -qF -- "$heading" "$file" && has_h=1
+  grep -qF -- "$ref"     "$file" && has_r=1
+  if [ "$has_h" -ne "$has_r" ]; then
+    err "examples 鮮度: $file は「$heading」と参照「$ref」を対で持つべき（今は片方だけ）"; ebroken=1
+  fi
+}
 for d in examples/*/; do
   check_doc "${d}spec.md"  "## 1. 概要" "## 2. なぜ" "## 3. ユーザーストーリー" "## 4. スコープ" "## 5. 非機能要件" "## 6. 未決定事項" "## 7. 憲法との整合"
   check_doc "${d}plan.md"  "## 1. 技術スタック" "## 2. アーキテクチャ概要" "## 3. データモデル" "## 4. インターフェース" "## 5. 主要な設計判断" "## 6. Constitution Check" "## 7. リスクと未確定事項"
   check_doc "${d}tasks.md" "## 凡例" "## トレーサビリティ"
+  check_trace "${d}spec.md" "## 8. 明確化ログ" "→ §8"
+  check_trace "${d}spec.md" "## 9. 改訂履歴" "→ §9"
 done
 [ "$ebroken" -eq 0 ] && ok "examples はテンプレの骨格（必須見出し）に追従している"
 
