@@ -83,6 +83,7 @@ sdd-starter/
 ├── README.md                  # この道標
 ├── LICENSE                    # The Unlicense（パブリックドメイン）
 ├── CONTRIBUTING.md            # 貢献ガイド（コマンド追加手順・設計の核）
+├── CLAUDE.md                  # Claude Code 固有の運用指針（@AGENTS.md を import・差し替え可）
 ├── AGENTS.md                  # 全エージェント共有の永続文脈（/plan が技術スタックを増分更新）
 ├── docs/
 │   └── quickstart.md          # クイックスタート（最初の30分）
