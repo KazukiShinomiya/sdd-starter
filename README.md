@@ -86,7 +86,8 @@ sdd-starter/
 ├── CLAUDE.md                  # Claude Code 固有の運用指針（@AGENTS.md を import・差し替え可）
 ├── AGENTS.md                  # 全エージェント共有の永続文脈（/plan が技術スタックを増分更新）
 ├── docs/
-│   └── quickstart.md          # クイックスタート（最初の30分）
+│   ├── quickstart.md          # クイックスタート（最初の30分）
+│   └── adopting.md            # このテンプレで自分の製品を作り始める手順
 ├── memory/
 │   └── constitution.md        # プロジェクトの不可侵原則（全段階の上位制約）
 ├── templates/                 # 各成果物の雛形（言語非依存）
@@ -217,6 +218,14 @@ bash scripts/check.sh          # macOS / Linux / git-bash
 ```
 
 同じ検査が CI（`.github/workflows/check.yml`）でも走り、テンプレの構造的整合を守る。
+
+---
+
+## 自分の製品に使う
+
+このテンプレで自分のプロダクトを作り始めるなら、SDD ワークフローの本体を残し、
+テンプレ自身の装置（examples・メタ検査・説明文書）を片付ける。残す/リセット/片付けるの
+切り分け手順は [**採用ガイド（docs/adopting.md）**](./docs/adopting.md) にまとめてある。
 
 ---
 
