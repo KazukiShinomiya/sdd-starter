@@ -84,10 +84,35 @@ for f in prompts/*.md; do
 done
 [ "$pbroken" -eq 0 ] && ok "prompts: 全 prompt が必須4節（入力/手順/出力/禁止）を備える"
 
+# テンプレの必須見出し（真実の源）。examples 照合とテンプレ自己整合の双方が、
+# この一つの定義を参照する。検査スクリプト内に見出しを二重写ししないための集約点だ。
+# 小さな機能が正当に省ける節（tasks のフェーズ等）は必須に含めない。§8/§9 は任意ゆえ別扱い。
+spec_heads=("## 1. 概要" "## 2. なぜ" "## 3. ユーザーストーリー" "## 4. スコープ" "## 5. 非機能要件" "## 6. 未決定事項" "## 7. 憲法との整合")
+plan_heads=("## 1. 技術スタック" "## 2. アーキテクチャ概要" "## 3. データモデル" "## 4. インターフェース" "## 5. 主要な設計判断" "## 6. Constitution Check" "## 7. リスクと未確定事項")
+tasks_heads=("## 凡例" "## トレーサビリティ")
+spec_trace_heads=("## 8. 明確化ログ" "## 9. 改訂履歴")
+
+# 自己整合ゲート: check が必須とする見出しは、真実の源であるテンプレに実在するか。
+# テンプレが見出しを改名・削除したのに、この check のリストだけ古いまま残る乖離を捕まえる。
+# これが無いと「examples が check のリストに従うか」しか見ず、「check がテンプレに従うか」は
+# 誰も見ない——鮮度ゲートが自分の鮮度を守れない死角になる。包含照合で括弧書きの揺れを吸収する。
+tsync=0
+check_template_sync() {
+  local template="$1"; shift
+  [ -f "$template" ] || { err "テンプレ同期: $template が存在しない"; tsync=1; return; }
+  for h in "$@"; do
+    grep -qF -- "$h" "$template" \
+      || { err "テンプレ同期: $template に必須見出し「$h」が無い（check のリストがテンプレと乖離）"; tsync=1; }
+  done
+}
+check_template_sync "templates/spec-template.md"  "${spec_heads[@]}" "${spec_trace_heads[@]}"
+check_template_sync "templates/plan-template.md"  "${plan_heads[@]}"
+check_template_sync "templates/tasks-template.md" "${tasks_heads[@]}"
+[ "$tsync" -eq 0 ] && ok "check の必須見出しはテンプレと一致している（真実の源との自己整合）"
+
 # examples/ がテンプレの骨格（必須見出し）に追従しているか（教材の鮮度ゲート）。
 # examples はドッグフードの教材。テンプレが進化して見出しが変わったのに examples が
-# 取り残される乖離を捕まえる。小さな機能が正当に省ける節（tasks のフェーズ等）は
-# 必須に含めない。括弧書きの揺れを避けるため固定文字列の包含で照合する。
+# 取り残される乖離を捕まえる。照合の基準は上の真実の源（*_heads）を共用する。
 ebroken=0
 check_doc() {
   local file="$1"; shift
@@ -110,11 +135,11 @@ check_trace() {
   fi
 }
 for d in examples/*/; do
-  check_doc "${d}spec.md"  "## 1. 概要" "## 2. なぜ" "## 3. ユーザーストーリー" "## 4. スコープ" "## 5. 非機能要件" "## 6. 未決定事項" "## 7. 憲法との整合"
-  check_doc "${d}plan.md"  "## 1. 技術スタック" "## 2. アーキテクチャ概要" "## 3. データモデル" "## 4. インターフェース" "## 5. 主要な設計判断" "## 6. Constitution Check" "## 7. リスクと未確定事項"
-  check_doc "${d}tasks.md" "## 凡例" "## トレーサビリティ"
-  check_trace "${d}spec.md" "## 8. 明確化ログ" "→ §8"
-  check_trace "${d}spec.md" "## 9. 改訂履歴" "→ §9"
+  check_doc "${d}spec.md"  "${spec_heads[@]}"
+  check_doc "${d}plan.md"  "${plan_heads[@]}"
+  check_doc "${d}tasks.md" "${tasks_heads[@]}"
+  check_trace "${d}spec.md" "${spec_trace_heads[0]}" "→ §8"
+  check_trace "${d}spec.md" "${spec_trace_heads[1]}" "→ §9"
 done
 [ "$ebroken" -eq 0 ] && ok "examples はテンプレの骨格（必須見出し）に追従している"
 

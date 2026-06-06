@@ -91,11 +91,37 @@ foreach ($f in Get-ChildItem prompts/*.md) {
 }
 if (-not $pbroken) { Pass "prompts: every prompt has the 4 required sections" }
 
+# Template's required headings (source of truth). Both the examples freshness gate and the
+# self-consistency gate below reference this single definition, so headings are never copied
+# twice inside the check script. Sections a small feature may legitimately omit (tasks phases)
+# are not required; sec.8/9 are optional and handled separately. Headings are Japanese.
+$specHeads = @("## 1. 概要","## 2. なぜ","## 3. ユーザーストーリー","## 4. スコープ","## 5. 非機能要件","## 6. 未決定事項","## 7. 憲法との整合")
+$planHeads = @("## 1. 技術スタック","## 2. アーキテクチャ概要","## 3. データモデル","## 4. インターフェース","## 5. 主要な設計判断","## 6. Constitution Check","## 7. リスクと未確定事項")
+$tasksHeads = @("## 凡例","## トレーサビリティ")
+$specTraceHeads = @("## 8. 明確化ログ","## 9. 改訂履歴")
+
+# Self-consistency gate: are the headings check requires actually present in the templates
+# (the source of truth)? Catches the drift where a template renames/removes a heading but this
+# check list stays stale. Without it, only "do examples follow check's list" is verified, never
+# "does check follow the template" -- a blind spot where the freshness gate cannot keep itself
+# fresh. Substring match absorbs parenthetical variation.
+$tsync = $false
+function Check-TemplateSync($template, $heads) {
+  if (-not (Test-Path $template)) { Fail "template sync: $template not found"; $script:tsync = $true; return }
+  $text = [System.IO.File]::ReadAllText($template, [System.Text.Encoding]::UTF8)
+  foreach ($h in $heads) {
+    if (-not $text.Contains($h)) { Fail "template sync: $template is missing required heading '$h' (check list drifted from template)"; $script:tsync = $true }
+  }
+}
+Check-TemplateSync "templates/spec-template.md"  ($specHeads + $specTraceHeads)
+Check-TemplateSync "templates/plan-template.md"  $planHeads
+Check-TemplateSync "templates/tasks-template.md" $tasksHeads
+if (-not $tsync) { Pass "check's required headings match the templates (self-consistency with source of truth)" }
+
 # examples/ must track the template skeleton (teaching-material freshness gate).
 # examples are dogfooded teaching material; catch the drift where a template heading
-# evolves but an example is left behind. Sections a small feature may legitimately omit
-# (e.g. tasks phases) are NOT required. Match by literal substring so both lungs behave
-# identically. Headings are Japanese, so read target files as UTF-8 explicitly.
+# evolves but an example is left behind. The match basis reuses the source of truth above
+# (*Heads). Match by literal substring so both lungs behave identically.
 $ebroken = $false
 function Check-Doc($file, $heads) {
   if (-not (Test-Path $file)) { return }   # skip artifacts an example has not produced
@@ -116,11 +142,11 @@ function Check-Trace($file, $heading, $ref) {
   }
 }
 foreach ($d in Get-ChildItem examples -Directory) {
-  Check-Doc (Join-Path $d.FullName "spec.md")  @("## 1. 概要","## 2. なぜ","## 3. ユーザーストーリー","## 4. スコープ","## 5. 非機能要件","## 6. 未決定事項","## 7. 憲法との整合")
-  Check-Doc (Join-Path $d.FullName "plan.md")  @("## 1. 技術スタック","## 2. アーキテクチャ概要","## 3. データモデル","## 4. インターフェース","## 5. 主要な設計判断","## 6. Constitution Check","## 7. リスクと未確定事項")
-  Check-Doc (Join-Path $d.FullName "tasks.md") @("## 凡例","## トレーサビリティ")
-  Check-Trace (Join-Path $d.FullName "spec.md") "## 8. 明確化ログ" "→ §8"
-  Check-Trace (Join-Path $d.FullName "spec.md") "## 9. 改訂履歴" "→ §9"
+  Check-Doc (Join-Path $d.FullName "spec.md")  $specHeads
+  Check-Doc (Join-Path $d.FullName "plan.md")  $planHeads
+  Check-Doc (Join-Path $d.FullName "tasks.md") $tasksHeads
+  Check-Trace (Join-Path $d.FullName "spec.md") $specTraceHeads[0] "→ §8"
+  Check-Trace (Join-Path $d.FullName "spec.md") $specTraceHeads[1] "→ §9"
 }
 if (-not $ebroken) { Pass "examples track the template skeleton (required headings)" }
 
