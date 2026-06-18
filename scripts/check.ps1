@@ -5,7 +5,8 @@
   Mirrors scripts/check.sh for Windows. Verifies that:
     - each of the 4 agent entry dirs matches prompts/ exactly (no missing/extra),
     - every entry references an existing prompts/*.md (no broken links),
-    - every *-template.md reference resolves.
+    - every *-template.md reference resolves,
+    - any analyze-report.md present has CRITICAL=0 (verification-output persistence gate).
   Exits non-zero when any check fails.
   NOTE: comments/messages are ASCII on purpose (Windows PowerShell 5.1 reads
   BOM-less UTF-8 as CP932), but NG/OK detail strings may include the offending paths.
@@ -149,6 +150,39 @@ foreach ($d in Get-ChildItem examples -Directory) {
   Check-Trace (Join-Path $d.FullName "spec.md") $specTraceHeads[1] "→ §9"
 }
 if (-not $ebroken) { Pass "examples track the template skeleton (required headings)" }
+
+# Verification-output (/analyze) persistence gate (conditional, example-independent).
+# /analyze checks cross-consistency of spec/plan/tasks and emits a machine-readable summary
+# "ANALYZE-SUMMARY critical=N warning=N info=N". The report is persisted to
+# specs/NNN-*/analyze-report.md (examples likewise); when present, CRITICAL=0 is required.
+# Features without a report pass untouched (analyze not yet run), keeping branch/PR independence.
+$abroken = $false
+function Check-AnalyzeReport($file) {
+  if (-not (Test-Path $file)) { return }
+  $text = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+  $lines = @($text -split "\r?\n")
+  $summary = $lines | Where-Object { $_ -match '^ANALYZE-SUMMARY ' } | Select-Object -Last 1
+  if (-not $summary) {
+    Fail "analyze persistence: $file has no machine-readable summary line (ANALYZE-SUMMARY ...)"
+    $script:abroken = $true; return
+  }
+  if ($summary -notmatch '^ANALYZE-SUMMARY critical=(\d+) warning=(\d+) info=(\d+)\s*$') {
+    Fail "analyze persistence: $file summary line is malformed: $summary"
+    $script:abroken = $true; return
+  }
+  $crit = [int]$Matches[1]
+  if ($crit -ne 0) {
+    Fail "analyze gate: $file has CRITICAL=$crit (resolve blocking findings before implementation)"
+    $script:abroken = $true
+  }
+}
+foreach ($dir in @('specs','examples')) {
+  if (-not (Test-Path $dir)) { continue }
+  foreach ($d in Get-ChildItem $dir -Directory -ErrorAction SilentlyContinue) {
+    Check-AnalyzeReport (Join-Path $d.FullName "analyze-report.md")
+  }
+}
+if (-not $abroken) { Pass "analyze report: every persisted one is CRITICAL=0 (absent = skip)" }
 
 Write-Host ""
 if ($fail) { Write-Host "Checks failed. Fix the NG items above."; exit 1 }

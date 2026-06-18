@@ -4,6 +4,7 @@
 #   - 4エージェントの入口が prompts/ と過不足なく対応しているか
 #   - 入口 → prompts/ のリンク切れが無いか
 #   - *-template.md への参照のリンク切れが無いか
+#   - analyze-report.md があれば CRITICAL=0 か（検証成果の保存運用ゲート）
 set -uo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -142,6 +143,35 @@ for d in examples/*/; do
   check_trace "${d}spec.md" "${spec_trace_heads[1]}" "→ §9"
 done
 [ "$ebroken" -eq 0 ] && ok "examples はテンプレの骨格（必須見出し）に追従している"
+
+# 検証成果（/analyze）の保存運用ゲート（条件付き・example 非依存）。
+# /analyze は spec/plan/tasks の横断整合を検証し、末尾に機械可読サマリ
+#   ANALYZE-SUMMARY critical=N warning=N info=N
+# を吐く。その結果を specs/NNN-*/analyze-report.md（examples も同様）に保存する運用とし、
+# レポートが在れば CRITICAL=0 を必須ゲートにする。レポートが無い機能は無風で通る
+# （analyze 未実行＝その段階に未到達。各ブランチ/PR の独立性を保つ）。
+abroken=0
+check_analyze_report() {
+  local f="$1"
+  [ -f "$f" ] || return 0
+  local line
+  line="$(grep -E '^ANALYZE-SUMMARY ' "$f" | tail -n1)"
+  if [ -z "$line" ]; then
+    err "analyze 保存: $f に機械可読サマリ行（ANALYZE-SUMMARY ...）が無い"; abroken=1; return
+  fi
+  if ! echo "$line" | grep -qE '^ANALYZE-SUMMARY critical=[0-9]+ warning=[0-9]+ info=[0-9]+[[:space:]]*$'; then
+    err "analyze 保存: $f のサマリ行の形式が不正: $line"; abroken=1; return
+  fi
+  local crit
+  crit="$(echo "$line" | sed -E 's/^ANALYZE-SUMMARY critical=([0-9]+).*/\1/')"
+  if [ "$crit" -ne 0 ]; then
+    err "analyze ゲート: $f は CRITICAL=$crit（着手前に解消すべき指摘が残っている）"; abroken=1
+  fi
+}
+for f in specs/*/analyze-report.md examples/*/analyze-report.md; do
+  check_analyze_report "$f"
+done
+[ "$abroken" -eq 0 ] && ok "analyze レポート: 保存済みは全て CRITICAL=0（無ければ素通り）"
 
 echo ""
 if [ "$fail" -ne 0 ]; then

@@ -60,7 +60,7 @@ AIエージェントにいきなり「作って」と頼むと、暗黙の前提
 | ③ 明確化 | `/clarify` | spec.md 更新 | 曖昧な点・未決定事項は何か |
 | ④ 設計 | `/plan` | `specs/NNN-*/plan.md` | **どう**作るか（技術選定・構造） |
 | ⑤ タスク | `/tasks` | `specs/NNN-*/tasks.md` | 実装可能な単位への分解 |
-| 検証 | `/analyze` | レポート | 仕様・設計・タスクは整合しているか |
+| 検証 | `/analyze` | `specs/NNN-*/analyze-report.md` | 仕様・設計・タスクは整合しているか |
 | ⑥ 実装 | `/implement` | コード | タスクを順に実行 |
 
 `[]` 内は任意。小さな機能なら飛ばしてよい。
@@ -120,7 +120,8 @@ sdd-starter/
 │   └── NNN-feature-name/
 │       ├── spec.md
 │       ├── plan.md
-│       └── tasks.md
+│       ├── tasks.md
+│       └── analyze-report.md   #   /analyze の検証結果（check が CRITICAL=0 をゲート）
 ├── examples/                  # 動作例（ドッグフード）
 │   ├── url-shortener/         #   Web API + DB のフル工程（constitution〜tasks + 補助成果物）
 │   ├── toc-generator/         #   小さな CLI の最短経路（spec → plan → tasks）
