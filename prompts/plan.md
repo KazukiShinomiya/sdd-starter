@@ -10,7 +10,9 @@
 - `templates/plan-template.md`
 
 ## 手順
-1. 対象 `spec.md` を読む。`[NEEDS CLARIFICATION]` が残っていれば **中断** し `/clarify` を促す。
+1. 対象 `spec.md` を読む。**事前条件ゲート**: 生きた `[NEEDS CLARIFICATION]`（`~~…~~` で
+   打ち消されていない未解決）が残っていれば、原則 `/clarify` に戻す。やむを得ず設計を進める場合も、
+   その未解決を `plan.md` に明記して追跡すること——一言も触れずに設計を進める **黙殺は禁止**だ。
 2. `memory/constitution.md` を読む。
 3. `templates/plan-template.md` を雛形に、同じディレクトリへ `plan.md` を生成する。
 4. 技術スタックを確定する。ユーザー指定が無ければ **最も単純で枯れた選択** を採り、理由を記す。

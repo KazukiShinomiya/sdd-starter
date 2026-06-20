@@ -173,6 +173,28 @@ for f in specs/*/analyze-report.md examples/*/analyze-report.md; do
 done
 [ "$abroken" -eq 0 ] && ok "analyze レポート: 保存済みは全て CRITICAL=0（無ければ素通り）"
 
+# 段階入口の事前条件ゲート（条件付き・example 非依存）。
+# 思想は analyze ゲートと同型——「未解決ゼロの強制」ではなく「黙殺の禁止／追跡ある先送りは許す」。
+# spec に生きた未解決（行頭の箇条書きとして裸で書かれ、~~…~~ で打ち消されていない
+# [NEEDS CLARIFICATION:）が残るのに、plan.md が在りながら NEEDS CLARIFICATION に一言も
+# 触れていなければ「黙殺」= NG。plan 未着手（plan.md 無し）／生きたマーカー無しは無風で通る
+# （入口で止める役は prompts/ 側。check は plan が在るのに黙殺した乖離だけを捕まえる）。
+gbroken=0
+check_precondition() {
+  local spec="$1" plan="$2"
+  [ -f "$spec" ] || return 0
+  local live
+  live="$(grep -nE '^[[:space:]]*- \[NEEDS CLARIFICATION:' "$spec" | grep -v '~~' || true)"
+  [ -z "$live" ] && return 0          # 生きたマーカー無し → 無風
+  [ -f "$plan" ] || return 0          # plan 未着手 → 無風
+  grep -qF 'NEEDS CLARIFICATION' "$plan" \
+    || { err "事前条件ゲート: $spec に未解決の [NEEDS CLARIFICATION] が残るのに $plan が一言も触れていない（黙殺の禁止）"; gbroken=1; }
+}
+for d in specs/*/ examples/*/; do
+  check_precondition "${d}spec.md" "${d}plan.md"
+done
+[ "$gbroken" -eq 0 ] && ok "事前条件: spec の生きた未解決は plan で追跡されている（無ければ素通り）"
+
 echo ""
 if [ "$fail" -ne 0 ]; then
   echo "検査失敗。上の NG を修正せよ。" >&2

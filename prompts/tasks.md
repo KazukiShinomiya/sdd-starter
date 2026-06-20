@@ -8,7 +8,9 @@
 - `templates/tasks-template.md`
 
 ## 手順
-1. 対象の `plan.md`・`spec.md` を読む。
+1. 対象の `plan.md`・`spec.md` を読む。**事前条件ゲート**: `plan.md` が無ければ `/plan` に戻す。
+   spec に生きた `[NEEDS CLARIFICATION]` が残るなら、それが `plan.md` で追跡されていることを確認する
+   （黙殺されたまま分解を進めない）。
 2. `templates/tasks-template.md` を雛形に、同じディレクトリへ `tasks.md` を生成する。
 3. 設計をフェーズ（準備→基盤→テスト→実装→仕上げ）に沿ったタスクへ分解する。
    - 各タスクは30分〜半日で終わる粒度を目安に。
