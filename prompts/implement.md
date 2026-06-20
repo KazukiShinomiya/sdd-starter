@@ -8,7 +8,9 @@
 - `memory/constitution.md`
 
 ## 手順
-1. 対象の `tasks.md` を読む。未着手タスクを依存順に並べる。
+1. 対象の `tasks.md` を読む。未着手タスクを依存順に並べる。**事前条件ゲート**: `tasks.md` が
+   無ければ `/tasks` に戻す。直前段階の成果物（spec/plan/tasks）が揃い、spec の生きた
+   `[NEEDS CLARIFICATION]` が plan で追跡されていることを確認してから着手する。
 2. 着手前に確認: `plan.md` の技術スタック・設計判断、`memory/constitution.md` の原則。
 3. 各タスクについて:
    - 着手時に `tasks.md` の状態を `[~]`（進行中）に更新。

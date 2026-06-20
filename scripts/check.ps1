@@ -184,6 +184,33 @@ foreach ($dir in @('specs','examples')) {
 }
 if (-not $abroken) { Pass "analyze report: every persisted one is CRITICAL=0 (absent = skip)" }
 
+# Stage-entry precondition gate (conditional, example-independent).
+# Same spirit as the analyze gate: not "zero unresolved" but "no silent ignoring;
+# tracked deferral is allowed." If spec carries a LIVE unresolved marker (a bare list item
+# '- [NEEDS CLARIFICATION:' not struck through with ~~...~~) yet plan.md exists and never
+# mentions NEEDS CLARIFICATION, that silence is NG. No plan / no live marker -> pass untouched
+# (stopping at the entry is the prompts/ job; check only catches the drift of a present-but-silent plan).
+$gbroken = $false
+function Check-Precondition($spec, $plan) {
+  if (-not (Test-Path $spec)) { return }
+  $lines = @([System.IO.File]::ReadAllText($spec, [System.Text.Encoding]::UTF8) -split "\r?\n")
+  $live = $lines | Where-Object { $_ -match '^\s*- \[NEEDS CLARIFICATION:' -and $_ -notmatch '~~' }
+  if (-not $live) { return }              # no live marker -> pass
+  if (-not (Test-Path $plan)) { return }  # plan not started -> pass
+  $ptext = [System.IO.File]::ReadAllText($plan, [System.Text.Encoding]::UTF8)
+  if (-not $ptext.Contains('NEEDS CLARIFICATION')) {
+    Fail "precondition gate: $spec has an unresolved [NEEDS CLARIFICATION] but $plan never mentions it (no silent ignoring)"
+    $script:gbroken = $true
+  }
+}
+foreach ($dir in @('specs','examples')) {
+  if (-not (Test-Path $dir)) { continue }
+  foreach ($d in Get-ChildItem $dir -Directory -ErrorAction SilentlyContinue) {
+    Check-Precondition (Join-Path $d.FullName "spec.md") (Join-Path $d.FullName "plan.md")
+  }
+}
+if (-not $gbroken) { Pass "precondition: spec's live unresolved markers are tracked in plan (absent = skip)" }
+
 Write-Host ""
 if ($fail) { Write-Host "Checks failed. Fix the NG items above."; exit 1 }
 Write-Host "All checks passed."
